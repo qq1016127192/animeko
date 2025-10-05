@@ -134,12 +134,12 @@ abstract class GenerateBuildConfigTask : DefaultTask() {
         }
 
         val content = """
-            package $packageNameValue
-            
-            object ${classNameValue}${platformNameValue.replaceFirstChar { it.uppercase() }} : $classNameValue {
-                $fieldsCode
-            }
-        """.trimIndent()
+package $packageNameValue
+
+object ${classNameValue}${platformNameValue.replaceFirstChar { it.uppercase() }} : $classNameValue {
+    $fieldsCode
+}
+""".trim() + "\n"
 
         outputFile.writeText(content)
     }
