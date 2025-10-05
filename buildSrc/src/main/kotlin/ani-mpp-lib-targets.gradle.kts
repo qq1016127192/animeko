@@ -74,6 +74,10 @@ configure<KotlinMultiplatformExtension> {
                     withJvm()
                     withNative()
                 }
+                group("mobile") {
+                    withAndroidTarget()
+                    withIos()
+                }
             }
         }
 
