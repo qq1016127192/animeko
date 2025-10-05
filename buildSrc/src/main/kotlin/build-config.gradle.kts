@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024-2025 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
@@ -52,8 +61,12 @@ class BuildConfigPlatform(val name: String) {
 sealed class BuildConfigField(val name: String) : Serializable {
     abstract fun generateKotlinCode(): String
 
-    data class StringField(val fieldName: String, val value: String) : BuildConfigField(fieldName) {
-        override fun generateKotlinCode(): String = "override val $name = \"$value\""
+    data class StringField(val fieldName: String, val value: String?) : BuildConfigField(fieldName) {
+        override fun generateKotlinCode(): String = if (value == null) {
+            "override val $name = null"
+        } else {
+            "override val $name = \"$value\""
+        }
     }
 
     data class BooleanField(val fieldName: String, val value: Boolean) : BuildConfigField(fieldName) {
