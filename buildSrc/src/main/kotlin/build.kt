@@ -194,9 +194,13 @@ fun Project.configureJvmTarget() {
         it.compilations.all {
             compileTaskProvider.configure {
                 compilerOptions {
+                    if (getLocalProperty("ani.kotlin.render-internal-diagnostic-names")?.toBooleanStrict() == true) {
+                        freeCompilerArgs.add("-Xrender-internal-diagnostic-names")
+                    }
                     freeCompilerArgs.add("-Xdont-warn-on-error-suppression")
                     freeCompilerArgs.add("-Xannotation-target-all")
                     freeCompilerArgs.add("-Xmulti-dollar-interpolation")
+                    freeCompilerArgs.add("-Xannotation-default-target=param-property")
                 }
             }
             if (this is KotlinJvmAndroidCompilation) {
