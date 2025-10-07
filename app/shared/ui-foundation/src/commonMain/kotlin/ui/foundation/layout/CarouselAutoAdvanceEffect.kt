@@ -55,9 +55,9 @@ fun CarouselAutoAdvanceEffect(
                     delay(period)
                     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                     launch(start = CoroutineStart.UNDISPATCHED) {
-                        // 实际测试, currentPage 只会到 pageCount - 2, 所以我们用  % (pageCount - 1)
+                        // 实际测试, currentPage 只会到 pageCount - 3, 所以我们用  % (pageCount - 2)
                         val targetPage =
-                            (carouselState.pagerState.currentPage + 1) % (carouselState.pagerState.pageCount - 1)
+                            (carouselState.pagerState.currentPage + 1) % (carouselState.pagerState.pageCount - 2)
                         if (targetPage < 0 || targetPage >= carouselState.pagerState.pageCount) {
                             return@launch // prevent crash
                         }
