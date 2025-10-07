@@ -4,8 +4,8 @@ android-gradle-plugin = "8.9.3"
 
 ### KOTLINX ###
 kotlinx-coroutines = "1.10.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
-kotlinx-serialization = "1.8.1" # https://github.com/Kotlin/kotlinx.serialization/releases
-kotlinx-datetime = "0.6.2" # https://github.com/Kotlin/kotlinx-datetime/releases
+kotlinx-serialization = "1.9.0" # https://github.com/Kotlin/kotlinx.serialization/releases
+kotlinx-datetime = "0.7.1" # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlinx-atomicfu = "0.27.0" # https://github.com/Kotlin/kotlinx-atomicfu/releases
 kotlinx-io = "0.7.0" # https://github.com/Kotlin/kotlinx-io/releases
 kotlinx-collections-immutable = "0.3.8" # https://github.com/Kotlin/kotlinx.collections.immutable/releases
