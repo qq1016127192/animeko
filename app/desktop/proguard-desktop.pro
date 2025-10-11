@@ -146,3 +146,7 @@
 -keep class net.bytebuddy.** { *; }
 
 -verbose
+
+# CMP 1.10.0-alpha01
+# Caused by: java.lang.NoSuchMethodError: Method androidx.sqlite.driver.bundled.BundledSQLiteDriverKt.nativeThreadSafeMode()I not found
+-keep class androidx.sqlite.driver.bundled.** { *; }
