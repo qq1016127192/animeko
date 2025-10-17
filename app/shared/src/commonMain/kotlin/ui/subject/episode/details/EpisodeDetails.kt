@@ -18,20 +18,17 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
@@ -176,10 +173,7 @@ fun EpisodeDetails(
                 { showSubjectDetails = false },
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentWindowAdaptiveInfo1().isWidthAtLeastMedium),
                 modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
-                contentWindowInsets = {
-                    BottomSheetDefaults.windowInsets
-                        .add(WindowInsets.desktopTitleBar())
-                        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top) },
+                contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
             ) {
                 SubjectDetailsScreen(
                     subjectDetailsState,
@@ -336,11 +330,7 @@ fun EpisodeDetails(
                         { showMediaSelector = false },
                         sheetState = sheetState,
                         modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
-                        contentWindowInsets = { 
-                            BottomSheetDefaults.windowInsets
-                                .add(WindowInsets.desktopTitleBar())
-                                .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-                                              },
+                        contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
                     ) {
                         MediaSelectorView(
                             mediaSelectorState,
@@ -351,9 +341,9 @@ fun EpisodeDetails(
                             mediaSourceResultListPresentation(),
                             onRestartSource = onRestartSource,
                             onRefresh = onRefreshMediaSources,
-                            modifier = Modifier.padding(top = 12.dp)
-                                .padding(horizontal = 16.dp)
-                                .fillMaxWidth(),
+                            modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+                                .fillMaxWidth()
+                                .navigationBarsPadding(),
                             stickyHeaderBackgroundColor = BottomSheetDefaults.ContainerColor,
                             onClickItem = {
                                 mediaSelectorState.select(it)
@@ -593,12 +583,6 @@ fun EpisodeDetailsScaffold(
                 danmakuStatistics(horizontalPaddingValues)
             }
         }
-
-        Spacer(
-            Modifier.windowInsetsBottomHeight(
-                AniWindowInsets.safeDrawing
-            )
-        )
     }
 }
 
