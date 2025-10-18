@@ -73,6 +73,7 @@ val downloadSpec = tasks.register<Download>("downloadSpec") {
     dest(layout.buildDirectory.file("temp/downloadSpec/openapi.json").get())
     onlyIfModified(false)
     overwrite(true)
+    headers["Authorization"] = "Bearer ${getPropertyOrNull("ani.api.token") ?: ""}"
 }
 
 // https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-gradle-plugin/README.adoc
