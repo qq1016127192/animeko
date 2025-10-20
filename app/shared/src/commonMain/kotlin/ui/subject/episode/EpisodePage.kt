@@ -37,8 +37,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -454,14 +452,21 @@ private fun EpisodeScreenTabletVeryWide(
                 }
                 // 如果当前不是 dark theme 并且 是安卓平台 并且 没有设置播放页始终使用暗色主题，则加一个渐变色避免看不清状态栏
                 // ios 宽屏模式下会自动隐藏状态栏, 无需处理
-                val needShadeBackground = !isEpPageDarkTheme && LocalPlatform.current.isAndroid() 
+                val needShadeBackground = !isEpPageDarkTheme && LocalPlatform.current.isAndroid()
                 // 填充 insets 背景颜色
                 Spacer(
                     Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surfaceContainerLow)
                         .ifThen(needShadeBackground) {
-                            background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.scrim, Color.Transparent)))
+                            background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.scrim,
+                                        Color.Transparent,
+                                    ),
+                                ),
+                            )
                         }
                         .windowInsetsPadding(
                             // Consider #1767
@@ -481,7 +486,7 @@ private fun EpisodeScreenTabletVeryWide(
                     userScrollEnabled = LocalPlatform.current.isMobile(),
                 ) { index ->
                     when (index) {
-                        0 -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                        0 -> Box(Modifier.fillMaxSize()) {
                             val navigator = LocalNavigator.current
                             val pageState by vm.pageState.collectAsStateWithLifecycle()
                             val toaster = LocalToaster.current
@@ -499,6 +504,7 @@ private fun EpisodeScreenTabletVeryWide(
                                     page.mediaSelectorState,
                                     { page.mediaSourceResultListPresentation },
                                     page.selfInfo,
+                                    modifier = Modifier.fillMaxSize(),
                                     onSwitchEpisode = { episodeId ->
                                         if (!vm.episodeSelectorState.selectEpisodeId(episodeId)) {
                                             navigator.navigateEpisodeDetails(vm.subjectId, episodeId)
@@ -522,7 +528,7 @@ private fun EpisodeScreenTabletVeryWide(
                                         }
                                     },
                                     shareData = page.shareData,
-                                    page.loadError,
+                                    loadError = page.loadError,
                                     onRetryLoad = {
                                         page.loadError?.let { vm.retryLoad(it) }
                                     },
@@ -794,13 +800,15 @@ fun EpisodeScreenContentPhoneScaffold(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.weaken())
 
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
-                when (index) {
-                    0 -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                        episodeDetails()
-                    }
+                Box(Modifier.fillMaxSize()) {
+                    when (index) {
+                        0 -> {
+                            episodeDetails()
+                        }
 
-                    1 -> Box(Modifier.fillMaxSize()) {
-                        commentColumn()
+                        1 -> {
+                            commentColumn()
+                        }
                     }
                 }
             }

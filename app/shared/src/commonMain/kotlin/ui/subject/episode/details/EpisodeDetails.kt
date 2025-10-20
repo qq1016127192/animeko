@@ -18,8 +18,8 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
@@ -33,10 +33,11 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.ExpandCircleDown
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -74,6 +75,7 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.Tag
 import me.him188.ani.app.domain.danmaku.DanmakuLoadingState
 import me.him188.ani.app.domain.episode.SetEpisodeCollectionTypeRequest
+import me.him188.ani.app.domain.episode.SubjectRecommendation
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.episode.share.MediaShareData
 import me.him188.ani.app.ui.foundation.layout.AniWindowInsets
@@ -82,6 +84,7 @@ import me.him188.ani.app.ui.foundation.layout.desktopTitleBar
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.isWidthAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
+import me.him188.ani.app.ui.foundation.rememberAsyncHandler
 import me.him188.ani.app.ui.foundation.widgets.ModalSideSheet
 import me.him188.ani.app.ui.foundation.widgets.rememberModalSideSheetState
 import me.him188.ani.app.ui.mediafetch.MediaSelectorState
@@ -103,7 +106,9 @@ import me.him188.ani.app.ui.subject.episode.EpisodePageLoadError
 import me.him188.ani.app.ui.subject.episode.details.components.DanmakuMatchInfoGrid
 import me.him188.ani.app.ui.subject.episode.details.components.DanmakuSourceCard
 import me.him188.ani.app.ui.subject.episode.details.components.DanmakuSourceSettingsDropdown
+import me.him188.ani.app.ui.subject.episode.details.components.FavoriteIconButton
 import me.him188.ani.app.ui.subject.episode.details.components.PlayingEpisodeItemDefaults
+import me.him188.ani.app.ui.subject.episode.details.components.SubjectRecommendationItem
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuMatchInfoSummaryRow
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
@@ -117,6 +122,7 @@ import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 class EpisodeDetailsState(
     val subjectInfo: State<SubjectInfo>,
     val airingLabelState: AiringLabelState,
+    val recommendations: State<List<SubjectRecommendation>>,
     val subjectDetailsStateLoader: SubjectDetailsStateLoader,
 ) {
     private val subject by subjectInfo
@@ -179,7 +185,8 @@ fun EpisodeDetails(
                 contentWindowInsets = {
                     BottomSheetDefaults.windowInsets
                         .add(WindowInsets.desktopTitleBar())
-                        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top) },
+                        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                },
             ) {
                 SubjectDetailsScreen(
                     subjectDetailsState,
@@ -195,15 +202,27 @@ fun EpisodeDetails(
         }
     }
 
+    val tasker = rememberAsyncHandler()
+
     var expandDanmakuStatistics by rememberSaveable { mutableStateOf(false) }
     var expandEpisodeList by rememberSaveable { mutableStateOf(false) }
     var expandDanmakuList by rememberSaveable { mutableStateOf(false) }
+
+    val subjectRecommendations by remember(state) { state.recommendations }
+    val editableSubjectCollectionTypePresentation by editableSubjectCollectionTypeState.presentationFlow.collectAsStateWithLifecycle()
 
     EditableSubjectCollectionTypeDialogsHost(editableSubjectCollectionTypeState)
 
     val navigator = LocalNavigator.current
     EpisodeDetailsScaffold(
-        subjectTitle = { Text(state.subjectTitle) },
+        subjectTitle = {
+            Row {
+                Text(state.subjectTitle)
+            }
+        },
+        favoriteButton = {
+            FavoriteIconButton(editableSubjectCollectionTypeState)
+        },
         episodeInfo = {
             episodeCarouselState.playingEpisode?.let {
                 Row {
@@ -246,13 +265,12 @@ fun EpisodeDetails(
         },
         subjectSuggestions = {
             // 推荐一些状态修改操作
-
             if (selfInfo.isSessionValid == true) {
-                val editableSubjectCollectionTypePresentation by editableSubjectCollectionTypeState.presentationFlow.collectAsStateWithLifecycle()
                 when (editableSubjectCollectionTypePresentation.selfCollectionType) {
-                    UnifiedCollectionType.NOT_COLLECTED -> {
+                    // 2025-10-20 改为在标题显示这个
+                    /*UnifiedCollectionType.NOT_COLLECTED -> {
                         SubjectCollectionTypeSuggestions.Collect(editableSubjectCollectionTypeState)
-                    }
+                    }*/
 
                     UnifiedCollectionType.WISH, UnifiedCollectionType.ON_HOLD -> {
                         ProvideTextStyle(MaterialTheme.typography.labelLarge) {
@@ -336,11 +354,11 @@ fun EpisodeDetails(
                         { showMediaSelector = false },
                         sheetState = sheetState,
                         modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
-                        contentWindowInsets = { 
+                        contentWindowInsets = {
                             BottomSheetDefaults.windowInsets
                                 .add(WindowInsets.desktopTitleBar())
                                 .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-                                              },
+                        },
                     ) {
                         MediaSelectorView(
                             mediaSelectorState,
@@ -445,6 +463,27 @@ fun EpisodeDetails(
                 )
             }
         } else null,
+        subjectRecommendations = { horizontalPadding ->
+            item("subject_recommendation_header") {
+                SectionTitle(Modifier.padding(top = 12.dp)) {
+                    Text("相关推荐")
+                }
+            }
+            for ((index, recommendation) in subjectRecommendations.withIndex()) {
+                item("subject_recommendation_${recommendation.subjectId}") {
+                    SubjectRecommendationItem(
+                        recommendation,
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontalPadding)
+                            .padding(
+                                top = if (index == 0) 8.dp else 8.dp,
+                                bottom = if (index == subjectRecommendations.lastIndex) 16.dp else 8.dp,
+                            ),
+                    )
+                }
+            }
+        },
         onExpandSubject = {
             showSubjectDetails = true
             state.subjectDetailsStateLoader.load(state.subjectId, state.subjectInfo.value)
@@ -476,9 +515,13 @@ private fun SectionTitle(
     }
 }
 
+/**
+ * [subjectRecommendations] 是最底部的内容, 可以使用 [LazyListScope].
+ */
 @Composable
 fun EpisodeDetailsScaffold(
     subjectTitle: @Composable () -> Unit,
+    favoriteButton: @Composable () -> Unit,
     episodeInfo: @Composable () -> Unit,
     loadError: @Composable () -> Unit,
     airingStatus: @Composable (FlowRowScope.() -> Unit),
@@ -487,6 +530,7 @@ fun EpisodeDetailsScaffold(
     danmakuStatisticsSummary: @Composable () -> Unit,
     danmakuStatistics: @Composable (contentPadding: PaddingValues) -> Unit,
     episodeListSection: @Composable () -> Unit,
+    subjectRecommendations: LazyListScope.(contentPadding: PaddingValues) -> Unit,
     onExpandSubject: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(all = 16.dp),
@@ -513,92 +557,122 @@ fun EpisodeDetailsScaffold(
         }
     }
 
-    Column(
-        modifier.padding(top = topPadding, bottom = bottomPadding).background(MaterialTheme.colorScheme.background),
-    ) {
-        // header
-        Column(
-            Modifier.padding(horizontalPaddingValues),
-        ) {
-            Row(Modifier.clickable(onClick = onExpandSubject)) {
-                Box(
-                    Modifier.padding(top = 8.dp) // icon button semantics padding
-                        .weight(1f),
-                ) {
-                    ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-                        SelectionContainer { subjectTitle() }
-                    }
-                }
+    val atLeastMedium = currentWindowAdaptiveInfo1().isWidthAtLeastMedium
+    val currentDanmakuListSelection by rememberUpdatedState(danmakuListSection)
 
-                Column(Modifier.padding(start = 24.dp)) {
-                    Row {
-                        IconButton(onExpandSubject) {
-                            Icon(Icons.Outlined.ExpandCircleDown, null)
+    LazyColumn(
+        modifier = modifier
+            .padding(top = topPadding, bottom = bottomPadding)
+            .background(MaterialTheme.colorScheme.background),
+    ) {
+        item("episode_detail_header") {
+            // header
+            Column(
+                Modifier.padding(horizontalPaddingValues),
+            ) {
+                Row {
+                    Box(
+                        Modifier.padding(top = 8.dp, end = 8.dp) // icon button semantics padding
+                            .weight(1f)
+                            .clickable(onClick = onExpandSubject),
+                    ) {
+                        ProvideTextStyle(MaterialTheme.typography.titleLarge) {
+                            SelectionContainer { subjectTitle() }
+                        }
+                    }
+
+                    Column(Modifier.padding(start = 24.dp)) {
+                        Row {
+                            favoriteButton()
                         }
                     }
                 }
             }
         }
 
-        FlowRow(
-            Modifier.padding(horizontalPaddingValues).paddingIfNotEmpty(top = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-        ) {
-            subjectSuggestions()
-        }
-
-        Row(Modifier.padding(horizontalPaddingValues).paddingIfNotEmpty(top = 12.dp)) {
-            episodeInfo()
-        }
-
-        Row(Modifier.padding(horizontalPaddingValues).paddingIfNotEmpty(top = 12.dp)) {
-            loadError()
-        }
-
-        if (currentWindowAdaptiveInfo1().isWidthAtLeastMedium) {
-            SectionTitle(
-                Modifier.padding(top = 12.dp, bottom = 8.dp),
+        item("episode_detail_subject_suggestions") {
+            FlowRow(
+                Modifier.padding(horizontalPaddingValues).paddingIfNotEmpty(top = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
             ) {
-                FlowRow(
-                    Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+                subjectSuggestions()
+            }
+        }
+
+        item("episode_detail_episode_info") {
+            Row(Modifier.padding(horizontalPaddingValues).paddingIfNotEmpty(top = 6.dp)) {
+                episodeInfo()
+            }
+        }
+
+        item("episode_detail_load_error") {
+            Row(Modifier.padding(horizontalPaddingValues).paddingIfNotEmpty(top = 12.dp)) {
+                loadError()
+            }
+        }
+
+        if (atLeastMedium) {
+            item("episode_detail_airing_status") {
+                SectionTitle(
+                    Modifier.padding(top = 12.dp, bottom = 8.dp),
                 ) {
-                    airingStatus()
+                    FlowRow(
+                        Modifier,/*.weight(1f)*/
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+                    ) {
+                        airingStatus()
+                    }
                 }
             }
         }
 
-        Row(Modifier.paddingIfNotEmpty(top = 8.dp)) {
-            exposedEpisodeItem(horizontalPaddingValues)
+        item("episode_detail_exposed_episode_item") {
+            Row(Modifier.paddingIfNotEmpty(top = 8.dp)) {
+                exposedEpisodeItem(horizontalPaddingValues)
+            }
         }
 
-        danmakuListSection?.let {
+        if (currentDanmakuListSelection != null) {
+            item("episode_detail_danmaku_list_section") {
+                Box(Modifier.paddingIfNotEmpty(top = 12.dp)) {
+                    currentDanmakuListSelection?.let {
+                        it()
+                    }
+                }
+            }
+        }
+
+        item("episode_detail_episode_list_section") {
             Box(Modifier.paddingIfNotEmpty(top = 12.dp)) {
-                it()
+                episodeListSection()
             }
         }
 
-        Box(Modifier.paddingIfNotEmpty(top = 12.dp)) {
-            episodeListSection()
-        }
-
-        if (!currentWindowAdaptiveInfo1().isWidthAtLeastMedium) {
-            SectionTitle(Modifier.padding(top = 12.dp, bottom = 8.dp)) {
-                danmakuStatisticsSummary()
+        if (!atLeastMedium) {
+            item("episode_detail_danmaku_statistics_summary") {
+                SectionTitle(Modifier.padding(top = 12.dp, bottom = 8.dp)) {
+                    danmakuStatisticsSummary()
+                }
             }
 
-            Row(Modifier.fillMaxWidth()) {
-                danmakuStatistics(horizontalPaddingValues)
+            item("danmaku_statistics") {
+                Row(Modifier.fillMaxWidth()) {
+                    danmakuStatistics(horizontalPaddingValues)
+                }
             }
         }
 
-        Spacer(
-            Modifier.windowInsetsBottomHeight(
-                AniWindowInsets.safeDrawing
+        subjectRecommendations(horizontalPaddingValues)
+
+        item("system_bar_spacer") {
+            Spacer(
+                Modifier.windowInsetsBottomHeight(
+                    AniWindowInsets.safeDrawing,
+                ),
             )
-        )
+        }
     }
 }
 
