@@ -474,7 +474,7 @@ fun EpisodeDetails(
         } else null,
         subjectRecommendations = { horizontalPadding ->
             item("subject_recommendation_header") {
-                SectionTitle(Modifier.padding(top = 12.dp)) {
+                SectionTitle {
                     Text("相关推荐")
                 }
             }
@@ -637,7 +637,7 @@ fun EpisodeDetailsScaffold(
         if (atLeastMedium) {
             item("episode_detail_airing_status") {
                 SectionTitle(
-                    Modifier.padding(top = 12.dp, bottom = 8.dp),
+                    Modifier.padding(top = 8.dp, bottom = 8.dp),
                 ) {
                     FlowRow(
                         Modifier,/*.weight(1f)*/
@@ -658,7 +658,7 @@ fun EpisodeDetailsScaffold(
 
         if (currentDanmakuListSelection != null) {
             item("episode_detail_danmaku_list_section") {
-                Box(Modifier.paddingIfNotEmpty(top = 12.dp)) {
+                Box(Modifier.paddingIfNotEmpty(top = 8.dp)) {
                     currentDanmakuListSelection?.let {
                         it()
                     }
@@ -667,14 +667,14 @@ fun EpisodeDetailsScaffold(
         }
 
         item("episode_detail_episode_list_section") {
-            Box(Modifier.paddingIfNotEmpty(top = 12.dp)) {
+            Box(Modifier.paddingIfNotEmpty(top = 8.dp)) {
                 episodeListSection()
             }
         }
 
         if (!atLeastMedium) {
             item("episode_detail_danmaku_statistics_summary") {
-                SectionTitle(Modifier.padding(top = 12.dp, bottom = 8.dp)) {
+                SectionTitle(Modifier.padding(top = 8.dp, bottom = 8.dp)) {
                     danmakuStatisticsSummary()
                 }
             }
