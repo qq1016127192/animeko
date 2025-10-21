@@ -78,6 +78,8 @@ import me.him188.ani.app.domain.episode.SetEpisodeCollectionTypeRequest
 import me.him188.ani.app.domain.episode.SubjectRecommendation
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.episode.share.MediaShareData
+import me.him188.ani.app.ui.foundation.animation.AniAnimatedVisibility
+import me.him188.ani.app.ui.foundation.animation.LocalAniMotionScheme
 import me.him188.ani.app.ui.foundation.layout.AniWindowInsets
 import me.him188.ani.app.ui.foundation.layout.currentWindowAdaptiveInfo1
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBar
@@ -209,7 +211,6 @@ fun EpisodeDetails(
     var expandDanmakuList by rememberSaveable { mutableStateOf(false) }
 
     val subjectRecommendations by remember(state) { state.recommendations }
-    val editableSubjectCollectionTypePresentation by editableSubjectCollectionTypeState.presentationFlow.collectAsStateWithLifecycle()
 
     EditableSubjectCollectionTypeDialogsHost(editableSubjectCollectionTypeState)
 
@@ -265,6 +266,7 @@ fun EpisodeDetails(
         },
         subjectSuggestions = {
             // 推荐一些状态修改操作
+            val editableSubjectCollectionTypePresentation by editableSubjectCollectionTypeState.presentationFlow.collectAsStateWithLifecycle()
             if (selfInfo.isSessionValid == true) {
                 when (editableSubjectCollectionTypePresentation.selfCollectionType) {
                     // 2025-10-20 改为在标题显示这个
@@ -398,7 +400,11 @@ fun EpisodeDetails(
         },
         danmakuStatistics = { innerPadding ->
             val danmakuLoadingState = danmakuStatistics.danmakuLoadingState
-            if (danmakuLoadingState is DanmakuLoadingState.Success) {
+            AniAnimatedVisibility(
+                danmakuLoadingState is DanmakuLoadingState.Success && expandDanmakuStatistics,
+                enter = LocalAniMotionScheme.current.animatedVisibility.columnEnter,
+                exit = LocalAniMotionScheme.current.animatedVisibility.columnExit,
+            ) {
                 val colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer),
@@ -413,7 +419,7 @@ fun EpisodeDetails(
                         DanmakuSourceCard(
                             source.matchInfo,
                             enabled = source.config.enabled,
-                            expandDanmakuStatistics,
+                            showDetails = true,
                             onClickSettings = {
                                 showDropdown = true
                             },
