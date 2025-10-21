@@ -65,8 +65,8 @@ val TestSubjectRecommendations = buildList {
                 nameCn = "推荐条目中文名称 $it",
                 imageUrl = "",
                 uri = null,
-                airingDateDesc = "2021 年 10 月",
-                ratingDesc = "2 万收藏 · 8.0 分",
+                primaryDesc = "2021 年 10 月",
+                secondaryDesc = "2 万收藏 · 8.0 分",
             ),
         )
     }

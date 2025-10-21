@@ -58,14 +58,14 @@ fun SubjectRecommendationItem(
 
             Column {
                 Text(
-                    item.airingDateDesc,
+                    item.primaryDesc,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    item.ratingDesc,
+                    item.secondaryDesc,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

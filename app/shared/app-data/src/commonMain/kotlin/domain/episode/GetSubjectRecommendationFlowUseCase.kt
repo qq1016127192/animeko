@@ -17,8 +17,8 @@ class SubjectRecommendation(
     val subjectId: Long?,
     val name: String,
     val nameCn: String?,
-    val airingDateDesc: String,
-    val ratingDesc: String,
+    val primaryDesc: String,
+    val secondaryDesc: String,
     val imageUrl: String,
     val uri: String?,
 )
@@ -34,8 +34,8 @@ class GetSubjectRecommendationUseCaseImpl(private val service: SubjectService) :
                 subjectId = it.subjectId,
                 name = it.subjectName,
                 nameCn = it.subjectNameCn,
-                airingDateDesc = it.primaryDesc,
-                ratingDesc = it.secondaryDesc,
+                primaryDesc = it.primaryDesc,
+                secondaryDesc = it.secondaryDesc,
                 imageUrl = it.imageUrl,
                 uri = it.uri,
             )
