@@ -36,8 +36,8 @@ import kotlinx.serialization.Serializable
  * @param subjectName 
  * @param subjectNameCn 
  * @param imageUrl 
- * @param primaryDesc 
- * @param secondaryDesc 
+ * @param desc1 
+ * @param desc2 
  * @param subjectId 
  * @param uri 
  */
@@ -51,9 +51,9 @@ data class AniSubjectRecommendation (
 
     @SerialName(value = "imageUrl") @Required val imageUrl: kotlin.String,
 
-    @SerialName(value = "primaryDesc") @Required val primaryDesc: kotlin.String,
+    @SerialName(value = "desc1") @Required val desc1: kotlin.String,
 
-    @SerialName(value = "secondaryDesc") @Required val secondaryDesc: kotlin.String,
+    @SerialName(value = "desc2") @Required val desc2: kotlin.String,
 
     @SerialName(value = "subjectId") val subjectId: kotlin.Long? = null,
 
