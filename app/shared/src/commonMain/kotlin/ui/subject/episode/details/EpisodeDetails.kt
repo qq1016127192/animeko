@@ -11,6 +11,7 @@ package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -77,16 +78,19 @@ import me.him188.ani.app.domain.danmaku.DanmakuLoadingState
 import me.him188.ani.app.domain.episode.SetEpisodeCollectionTypeRequest
 import me.him188.ani.app.domain.episode.SubjectRecommendation
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.navigation.SubjectDetailPlaceholder
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.navigation.LocalBrowserNavigator
 import me.him188.ani.app.ui.episode.share.MediaShareData
 import me.him188.ani.app.ui.foundation.animation.AniAnimatedVisibility
 import me.him188.ani.app.ui.foundation.animation.LocalAniMotionScheme
+import me.him188.ani.app.ui.foundation.interaction.onClickEx
 import me.him188.ani.app.ui.foundation.layout.AniWindowInsets
 import me.him188.ani.app.ui.foundation.layout.currentWindowAdaptiveInfo1
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBar
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.isWidthAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
-import me.him188.ani.app.ui.foundation.rememberAsyncHandler
 import me.him188.ani.app.ui.foundation.widgets.ModalSideSheet
 import me.him188.ani.app.ui.foundation.widgets.rememberModalSideSheetState
 import me.him188.ani.app.ui.mediafetch.MediaSelectorState
@@ -204,7 +208,8 @@ fun EpisodeDetails(
         }
     }
 
-    val tasker = rememberAsyncHandler()
+    val context = LocalContext.current
+    val browserNavigator = LocalBrowserNavigator.current
 
     var expandDanmakuStatistics by rememberSaveable { mutableStateOf(false) }
     var expandEpisodeList by rememberSaveable { mutableStateOf(false) }
@@ -481,6 +486,26 @@ fun EpisodeDetails(
                         recommendation,
                         Modifier
                             .fillMaxWidth()
+                            .onClickEx(
+                                remember { MutableInteractionSource() },
+                                indication = null,
+                            ) {
+                                val uri = recommendation.uri
+                                val targetSubjectId = recommendation.subjectId?.toInt()
+                                if (uri != null) {
+                                    browserNavigator.openBrowser(context, uri)
+                                } else if (targetSubjectId != null) {
+                                    navigator.navigateSubjectDetails(
+                                        targetSubjectId,
+                                        SubjectDetailPlaceholder(
+                                            id = targetSubjectId,
+                                            name = recommendation.name,
+                                            nameCN = recommendation.nameCn ?: "",
+                                            coverUrl = recommendation.imageUrl,
+                                        ),
+                                    )
+                                }
+                            }
                             .padding(horizontalPadding)
                             .padding(
                                 top = if (index == 0) 8.dp else 8.dp,
