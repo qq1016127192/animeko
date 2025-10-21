@@ -11,7 +11,6 @@ package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -84,7 +83,6 @@ import me.him188.ani.app.platform.navigation.LocalBrowserNavigator
 import me.him188.ani.app.ui.episode.share.MediaShareData
 import me.him188.ani.app.ui.foundation.animation.AniAnimatedVisibility
 import me.him188.ani.app.ui.foundation.animation.LocalAniMotionScheme
-import me.him188.ani.app.ui.foundation.interaction.onClickEx
 import me.him188.ani.app.ui.foundation.layout.AniWindowInsets
 import me.him188.ani.app.ui.foundation.layout.currentWindowAdaptiveInfo1
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBar
@@ -114,7 +112,7 @@ import me.him188.ani.app.ui.subject.episode.details.components.DanmakuSourceCard
 import me.him188.ani.app.ui.subject.episode.details.components.DanmakuSourceSettingsDropdown
 import me.him188.ani.app.ui.subject.episode.details.components.FavoriteIconButton
 import me.him188.ani.app.ui.subject.episode.details.components.PlayingEpisodeItemDefaults
-import me.him188.ani.app.ui.subject.episode.details.components.SubjectRecommendationItem
+import me.him188.ani.app.ui.subject.episode.details.components.SubjectRecommendationCard
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuMatchInfoSummaryRow
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
@@ -480,37 +478,30 @@ fun EpisodeDetails(
                     Text("相关推荐")
                 }
             }
-            for ((index, recommendation) in subjectRecommendations.withIndex()) {
+            for (recommendation in subjectRecommendations) {
                 item("subject_recommendation_${recommendation.subjectId}") {
-                    SubjectRecommendationItem(
+                    SubjectRecommendationCard(
+                        {
+                            val uri = recommendation.uri
+                            val targetSubjectId = recommendation.subjectId?.toInt()
+                            if (uri != null) {
+                                browserNavigator.openBrowser(context, uri)
+                            } else if (targetSubjectId != null) {
+                                navigator.navigateSubjectDetails(
+                                    targetSubjectId,
+                                    SubjectDetailPlaceholder(
+                                        id = targetSubjectId,
+                                        name = recommendation.name,
+                                        nameCN = recommendation.nameCn ?: "",
+                                        coverUrl = recommendation.imageUrl,
+                                    ),
+                                )
+                            }
+                        },
                         recommendation,
                         Modifier
                             .fillMaxWidth()
-                            .onClickEx(
-                                remember { MutableInteractionSource() },
-                                indication = null,
-                            ) {
-                                val uri = recommendation.uri
-                                val targetSubjectId = recommendation.subjectId?.toInt()
-                                if (uri != null) {
-                                    browserNavigator.openBrowser(context, uri)
-                                } else if (targetSubjectId != null) {
-                                    navigator.navigateSubjectDetails(
-                                        targetSubjectId,
-                                        SubjectDetailPlaceholder(
-                                            id = targetSubjectId,
-                                            name = recommendation.name,
-                                            nameCN = recommendation.nameCn ?: "",
-                                            coverUrl = recommendation.imageUrl,
-                                        ),
-                                    )
-                                }
-                            }
-                            .padding(horizontalPadding)
-                            .padding(
-                                top = if (index == 0) 8.dp else 8.dp,
-                                bottom = if (index == subjectRecommendations.lastIndex) 16.dp else 8.dp,
-                            ),
+                            .padding(horizontalPadding),
                     )
                 }
             }

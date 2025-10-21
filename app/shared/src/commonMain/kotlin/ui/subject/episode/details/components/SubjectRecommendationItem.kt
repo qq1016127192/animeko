@@ -13,65 +13,97 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.domain.episode.SubjectRecommendation
 import me.him188.ani.app.ui.foundation.AsyncImage
+import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.utils.platform.annotations.TestOnly
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-fun SubjectRecommendationItem(
+fun SubjectRecommendationCard(
+    onClick: () -> Unit,
     item: SubjectRecommendation,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier.height(72.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    Surface(
+        onClick,
+        modifier,
+        shape = MaterialTheme.shapes.medium,
+        color = Color.Transparent,
     ) {
-        Box(Modifier.clip(MaterialTheme.shapes.small)) {
-            AsyncImage(
-                item.imageUrl,
-                modifier = Modifier.size(112.dp, 72.dp),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-            )
-        }
-
-        Column(
-            Modifier.fillMaxHeight(),
-            verticalArrangement = Arrangement.SpaceBetween,
+        Row(
+            Modifier.padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                item.nameCn ?: item.name,
-                style = MaterialTheme.typography.titleSmall,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Box(Modifier.clip(MaterialTheme.shapes.medium)) {
+                AsyncImage(
+                    item.imageUrl,
+                    modifier = Modifier.size(139.dp, 78.dp),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                )
+            }
 
-            Column {
+            Column(
+                Modifier.heightIn(min = 78.dp).weight(1f),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
                 Text(
-                    item.desc1,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
+                    item.nameCn ?: item.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    item.desc2,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+
+                Column {
+                    Text(
+                        item.desc1,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        item.desc2,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }
+}
+
+@TestOnly
+val TestSubjectRecommendation
+    get() = SubjectRecommendation(
+        subjectId = 123456,
+        name = "進撃の巨人",
+        nameCn = "进击的巨人",
+        desc1 = "2022 年 10 月",
+        desc2 = "2 万收藏 · 7.3 分",
+        imageUrl = "https://lain.bgm.tv/pic/cover/l/8e",
+        uri = null,
+    )
+
+@OptIn(TestOnly::class)
+@Composable
+@Preview
+private fun PreviewSubjectRecommendationCard() = ProvideCompositionLocalsForPreview {
+    SubjectRecommendationCard({}, TestSubjectRecommendation)
 }
