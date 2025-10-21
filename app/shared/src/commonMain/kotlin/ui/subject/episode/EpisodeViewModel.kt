@@ -67,6 +67,7 @@ import me.him188.ani.app.domain.episode.EpisodeCompletionContext.isKnownComplete
 import me.him188.ani.app.domain.episode.EpisodeDanmakuLoader
 import me.him188.ani.app.domain.episode.EpisodeFetchSelectPlayState
 import me.him188.ani.app.domain.episode.EpisodeSession
+import me.him188.ani.app.domain.episode.GetSubjectRecommendationUseCase
 import me.him188.ani.app.domain.episode.SetEpisodeCollectionTypeUseCase
 import me.him188.ani.app.domain.episode.SubjectEpisodeInfoBundle
 import me.him188.ani.app.domain.episode.UnsafeEpisodeSessionApi
@@ -253,6 +254,7 @@ class EpisodeViewModel(
     private val getMediaSourceInstances: GetMediaSourceInstancesUseCase by inject()
     val turnstileState: TurnstileState by inject()
     val setEpisodeCollectionType: SetEpisodeCollectionTypeUseCase by inject()
+    private val getSubjectRecommendations: GetSubjectRecommendationUseCase by inject()
     // endregion
 
     private val tasker = SingleTaskExecutor(backgroundScope.coroutineContext)
@@ -407,6 +409,7 @@ class EpisodeViewModel(
                 }
                     .produceState(null),
             ),
+            recommendations = subjectInfoFlow.map { getSubjectRecommendations(it.subjectId) }.produceState(emptyList()),
             subjectDetailsStateLoader = SubjectDetailsStateLoader(subjectDetailsStateFactory, backgroundScope),
         )
     }
@@ -578,13 +581,13 @@ class EpisodeViewModel(
         started = SharingStarted.WhileSubscribed(5000), // Must be some time, because when switching full-screen (i.e. configuration change), UI may stop collect for some milliseconds.
         replay = 1,
     ) // This is lazy. If user puts app into background, queries will abort.
-    
+
     val allDanmakuListFlow = combine(
         danmakuLoader.allDanmakuFlow,
-        danmakuManager.selfId
+        danmakuManager.selfId,
     ) { danmakuList, selfId ->
-        danmakuList.map { 
-            DanmakuPresentation(it, isSelf = selfId == it.senderId) 
+        danmakuList.map {
+            DanmakuPresentation(it, isSelf = selfId == it.senderId)
         }
     }.shareInBackground(
         started = SharingStarted.WhileSubscribed(5000),
@@ -592,7 +595,7 @@ class EpisodeViewModel(
     )
 
     private val selectedDanmakuSources = MutableStateFlow<Set<DanmakuServiceId>>(emptySet())
-    
+
     init {
         launchInBackground {
             danmakuLoader.fetchResults.collect { fetchResults ->

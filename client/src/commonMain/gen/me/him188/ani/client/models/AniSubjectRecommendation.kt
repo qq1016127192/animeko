@@ -33,19 +33,31 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * @param stageName 
- * @param extraInfo 
- * @param exception 
+ * @param subjectName 
+ * @param subjectNameCn 
+ * @param imageUrl 
+ * @param desc1 
+ * @param desc2 
+ * @param subjectId 
+ * @param uri 
  */
 @Serializable
 
-data class AniBangumiSyncError (
+data class AniSubjectRecommendation (
 
-    @SerialName(value = "stageName") @Required val stageName: kotlin.String,
+    @SerialName(value = "subjectName") @Required val subjectName: kotlin.String,
 
-    @SerialName(value = "extraInfo") @Required val extraInfo: kotlin.String,
+    @SerialName(value = "subjectNameCn") @Required val subjectNameCn: kotlin.String,
 
-    @SerialName(value = "exception") val exception: kotlin.String? = null
+    @SerialName(value = "imageUrl") @Required val imageUrl: kotlin.String,
+
+    @SerialName(value = "desc1") @Required val desc1: kotlin.String,
+
+    @SerialName(value = "desc2") @Required val desc2: kotlin.String,
+
+    @SerialName(value = "subjectId") val subjectId: kotlin.Long? = null,
+
+    @SerialName(value = "uri") val uri: kotlin.String? = null
 
 ) {
 
