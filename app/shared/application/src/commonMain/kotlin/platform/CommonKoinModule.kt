@@ -159,6 +159,13 @@ private fun KoinApplication.otherModules(getContext: () -> Context, coroutineSco
     single<SessionStateProvider> {
         get<SessionManager>().stateProvider
     }
+    single<ServerSelector> {
+        ServerSelector(
+            settingsRepository.danmakuSettings.flow.map { it.useGlobal },
+            proxyProvider = get(),
+            coroutineScope,
+        )
+    }
     single<HttpClientProvider> {
         val sessionManager by inject<SessionManager>()
         DefaultHttpClientProvider(
@@ -172,26 +179,7 @@ private fun KoinApplication.otherModules(getContext: () -> Context, coroutineSco
                     onRefresh = { null },
                 ),
                 ServerListFeatureHandler(
-                    settingsRepository.danmakuSettings.flow.map { danmakuSettings ->
-                        when (danmakuSettings.useGlobal) {
-                            true -> {
-                                AniServers.optimizedForGlobal
-                            }
-
-                            false -> {
-                                AniServers.optimizedForCN
-                            }
-
-                            null -> {
-                                // 根据时区推断
-                                if (AniServers.shouldUseGlobalServer()) {
-                                    AniServers.optimizedForGlobal
-                                } else {
-                                    AniServers.optimizedForCN
-                                }
-                            }
-                        }
-                    },
+                    get<ServerSelector>().flow,
                 ),
                 ConvertSendCountExceedExceptionFeatureHandler,
                 VersionExpiryFeatureHandler, // handle 426 Upgrade Required -> show blocking dialog
